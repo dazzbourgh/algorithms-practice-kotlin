@@ -1,3 +1,6 @@
+import org.apache.commons.lang3.RandomStringUtils
+import kotlin.system.measureTimeMillis
+
 fun longestWord(string: String, dictionary: Set<String>): String {
     return dictionary
             .filter { word ->
@@ -16,34 +19,47 @@ fun longestWord(string: String, dictionary: Set<String>): String {
 fun optimalLongestWord(string: String, dictionary: Set<String>): String {
     val map = dictionary
             .map { Tuple(it, 0) }
-            .groupingBy { it.word[it.index] }
-            .foldTo(mutableMapOf<Char, MutableSet<Tuple>>(), mutableSetOf()) { accumulator, element ->
-                accumulator.add(element)
-                accumulator
-            }
+            .matchCharToIndex()
+    val foundList = mutableListOf<Tuple>()
     string.forEach { c ->
-        map[c]?.let { set ->
-            val updatedMap = mutableMapOf<Char, MutableSet<Tuple>>()
-            set.forEach { tuple ->
-                tuple.index += 1
-                updatedMap[c]?.add(tuple) ?: updatedMap.put(c, mutableSetOf(tuple))
-            }
-            updatedMap.forEach { c, updatedSet ->
-                val existingList = map[c]
-                if (existingList != null) existingList.addAll(updatedSet) else map[c] = updatedSet
+        val updatedMap = mutableMapOf<Char, MutableSet<Tuple>>()
+        map[c]?.also { words ->
+            words.forEach {
+                ++it.index
+                if (it.index < it.word.length) {
+                    val newChar = it.word[it.index]
+                    updatedMap[newChar]?.add(it) ?: updatedMap.put(newChar, mutableSetOf(it))
+                } else {
+                    foundList.add(it)
+                }
             }
         }
+        map.remove(c)
+        map.putAll(updatedMap)
     }
-    return map.flatMap { it.value }
-            .filter { it.index == string.length }
-            .map { it.word }
-            .firstOrNull() ?: ""
+    return foundList
+            .maxBy { it.word.length }
+            ?.word ?: ""
 }
 
-
 fun main(args: Array<String>) {
-    print(longestWord("abppplee", setOf("able", "ale", "apple", "bale", "kangaroo")))
-    print(optimalLongestWord("abppplee", setOf("able", "ale", "apple", "bale", "kangaroo")))
+    val words = mutableSetOf("able", "ale", "apple", "bale", "kangaroo")
+    for (i in 0..10000000) {
+        words.add(RandomStringUtils.random(2))
+    }
+    measureTimeMillis { println(longestWord("abppplee", words)) }
+            .let { println("Time is $it") }
+    measureTimeMillis { println(optimalLongestWord("abppplee", words)) }
+            .let { println("Time is $it") }
 }
 
 data class Tuple(val word: String, var index: Int)
+
+private fun List<Tuple>.matchCharToIndex(): MutableMap<Char, MutableSet<Tuple>> {
+    return this
+            .groupingBy { it.word[it.index] }
+            .foldTo(mutableMapOf(), mutableSetOf()) { accumulator, element ->
+                accumulator.add(element)
+                accumulator
+            }
+}
