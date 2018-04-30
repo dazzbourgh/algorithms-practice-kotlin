@@ -44,13 +44,11 @@ fun optimalLongestWord(string: String, dictionary: Set<String>): String {
 
 fun main(args: Array<String>) {
     val words = mutableSetOf("able", "ale", "apple", "bale", "kangaroo")
-    for (i in 0..10000000) {
-        words.add(RandomStringUtils.random(2))
+    for (i in 0..1000) {
+        words.add(RandomStringUtils.random(2000))
     }
-    measureTimeMillis { println(longestWord("abppplee", words)) }
-            .let { println("Time is $it") }
-    measureTimeMillis { println(optimalLongestWord("abppplee", words)) }
-            .let { println("Time is $it") }
+    executeAndPrintTime { longestWord("abppplee", words) }
+    executeAndPrintTime { optimalLongestWord("abppplee", words) }
 }
 
 data class Tuple(val word: String, var index: Int)
@@ -62,4 +60,9 @@ private fun List<Tuple>.matchCharToIndex(): MutableMap<Char, MutableSet<Tuple>> 
                 accumulator.add(element)
                 accumulator
             }
+}
+
+private fun executeAndPrintTime(anyFun: () -> String) {
+    measureTimeMillis { println(anyFun()) }
+            .let { println("Time is $it") }
 }
