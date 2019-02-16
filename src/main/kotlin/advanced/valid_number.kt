@@ -21,6 +21,3 @@ fun isNumber(s: String): Boolean {
     val regex = Regex("""(\s+)?[-+]?([0-9]+(\.[0-9]+)?|\.[0-9]+|[0-9]+\.)(e[-+]?[0-9]+)?(\s+)?""")
     return regex.matches(s)
 }
-fun main(args: Array<String>) {
-    isNumber("1").also { println(it) }
-}
