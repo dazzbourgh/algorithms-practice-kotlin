@@ -1,4 +1,4 @@
-package advanced
+package leetcode
 
 /*
     "0" => true
